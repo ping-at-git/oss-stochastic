@@ -31,10 +31,19 @@ class CompeteProcess(BaseProcess):
     def _init_pref(self, population, num_oss, init_oss_max):
         cand = np.random.normal(
             loc=5, scale=2, size=(population, 1)
-            ).clip(min=self.oss_floor, max=init_oss_max*10)
+            ).clip(min=self.oss_floor, max=10)
+
+        ## below modifies the initial adopters as persistent
         mdf = np.any(self.state, axis=1).reshape(-1, 1)
         cand = np.where(mdf, self.oss_floor, cand)
-        self.pref = np.tile(cand, (1, num_oss))
+        self.pref = np.tile(cand, (1, num_oss))  # this alone is unmodified preference
+
+        # below modifies the initial adopters to prefer
+        # the chosen OSS
+        # self.pref = np.tile(cand, (1, num_oss))
+        # mdf_pref = np.tile(
+        #     self.oss_value.reshape(1, -1), (population, 1))
+        # self.pref = np.where(self.state, mdf_pref, self.pref)
 
     def _init_oss_eval(self, population, num_oss):
         self.oss_eval = np.random.exponential(
@@ -72,8 +81,11 @@ class CompeteProcess(BaseProcess):
         )
     
     def _update_new_adoption(self, new_adoption):
+        # below prevents readoption
         new = np.logical_and(
             new_adoption, np.invert(self.oss_abdprcs))
+        # below allows readoption
+        # new = new_adoption
         self.state = np.add(self.state, new)
 
     def _new_adoption(self):
