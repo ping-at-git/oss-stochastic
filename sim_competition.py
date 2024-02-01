@@ -1,18 +1,18 @@
-from oss_iid import IIDProcess
+from oss_competition import CompeteProcess
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
 POPULATION = 1e3
 
-sim = IIDProcess(population=POPULATION, 
-                 num_oss=100,
-                 init_adopt_rate=0.005,
-                 prob_contribute=0.008,
-                 init_oss_max=10,
-                 oss_discount=0.99,
-                 max_evol=500
-                 )
+sim = CompeteProcess(population=POPULATION, 
+                     num_oss=3,
+                     init_adopt_rate=0.05,
+                     prob_contribute=0.01,
+                     init_oss_max=10,
+                     oss_discount=0.95,
+                     max_evol=100
+                     )
 
 
 def plot_3d(df):
@@ -47,12 +47,7 @@ if __name__=="__main__":
     df.iloc[-1].plot.hist(bins=30, title='OSS adoption distribution')
     plt.show()
 
-    plot_3d(df)
-
-    # df = pd.DataFrame(res.get('oss_value'))
-    # df.plot.line(c='black', alpha=0.1, legend=False,
-    #               title='OSS value over time')
-    # plt.show()
+    # plot_3d(df)
  
     # breakpoint()
    

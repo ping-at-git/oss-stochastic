@@ -2,6 +2,7 @@ import numpy as np
 
 class BaseProcess:
 
+    oss_floor = 0.001
     oss_value = None
     oss_eval = None
     state = None
@@ -13,7 +14,7 @@ class BaseProcess:
                  num_oss=10,
                  init_adopt_rate=1e-4,
                  prob_contribute=1e-3,
-                 init_oss_max=10,
+                 init_oss_max=1,
                  oss_discount=1,
                  max_evol=1e3) -> None:
         
@@ -24,7 +25,7 @@ class BaseProcess:
 
         self._init_oss_value(num_oss, init_oss_max)
         self._init_state(int(population), num_oss, init_adopt_rate)
-        self._init_pref(int(population), num_oss)
+        self._init_pref(int(population), num_oss, init_oss_max)
         self._init_oss_eval(int(population), num_oss)
 
     def _init_oss_value(self, num_oss, init_oss_max):
@@ -42,16 +43,16 @@ class BaseProcess:
             1, init_adopt_rate, size=(population, num_oss)
         ).astype(np.bool_)
 
-    def _init_pref(self, population, num_oss):
+    def _init_pref(self, population, num_oss, init_oss_max):
         """
         assign a 2D numpy array,
-        min=1, max=100, distribution can change
+        min=1, max=10, distribution can change
         """
         val = np.random.normal(
-            loc=50, scale=20, size=(population, num_oss)
-            ).clip(min=1, max=100)
+            loc=5, scale=2, size=(population, num_oss)
+            ).clip(min=self.oss_floor, max=init_oss_max*10)
         self.pref = np.where(
-            np.invert(self.state), self.oss_value+val, 1)
+            np.invert(self.state), self.oss_value+val, 0.01)
 
     def _init_oss_eval(self, population, num_oss):
         """
@@ -59,7 +60,7 @@ class BaseProcess:
         add noise to the objective value
         """
         noise = np.random.uniform(
-            low=0, high=10, size=(population, num_oss))
+            low=0, high=1, size=(population, num_oss))
         self.oss_eval = np.where(
             self.state, self.pref+noise, self.oss_value-noise)
 
@@ -95,7 +96,7 @@ class BaseProcess:
         return a numpy array containing increment per OSS
         """
         contribution = np.random.exponential(
-            scale=1, size=self.state.shape)
+            scale=0.1, size=self.state.shape)
         return np.multiply(contribution, contributor).sum(axis=0)
 
     def _update_oss(self, val):
