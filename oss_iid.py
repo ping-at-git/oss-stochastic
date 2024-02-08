@@ -15,17 +15,17 @@ class IIDProcess(BaseProcess):
     #     here try uniform distribution
     #     """
     #     val = np.random.uniform(
-    #         low=50, high=51, size=(population, num_oss))
+    #         low=5, high=5.1, size=(population, num_oss))
     #     self.pref = np.where(
     #         np.invert(self.state), val, 0)
         
-    # def _sample_contribution(self, contributor):
-    #     """
-    #     return a numpy array containing increment per OSS
-    #     """
-    #     contribution = np.random.exponential(
-    #         scale=1, size=self.state.shape) - 0.5
-    #     return np.multiply(contribution, contributor).sum(axis=0)
+    def _sample_contribution(self, contributor):
+        """
+        here incorporate negative contribution
+        """
+        contribution = np.random.exponential(
+            scale=0.1, size=self.state.shape) - 0.09
+        return np.multiply(contribution, contributor).sum(axis=0)
 
     def _switch_adoption(self):
         """reverse adoption"""

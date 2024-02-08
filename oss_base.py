@@ -25,14 +25,17 @@ class BaseProcess:
 
         self._init_oss_value(num_oss, init_oss_max)
         self._init_state(int(population), num_oss, init_adopt_rate)
-        self._init_pref(int(population), num_oss, init_oss_max)
+        self._init_pref(int(population), num_oss)
         self._init_oss_eval(int(population), num_oss)
 
     def _init_oss_value(self, num_oss, init_oss_max):
         """
         assign a 1D numpy array
         """
-        self.oss_value = np.random.random_sample(num_oss) * init_oss_max
+        if isinstance(init_oss_max, list):
+            self.oss_value = np.asarray(init_oss_max)
+        else:
+            self.oss_value = np.random.random_sample(num_oss) * init_oss_max
 
     def _init_state(self, population, num_oss, init_adopt_rate):
         """
@@ -43,14 +46,14 @@ class BaseProcess:
             1, init_adopt_rate, size=(population, num_oss)
         ).astype(np.bool_)
 
-    def _init_pref(self, population, num_oss, init_oss_max):
+    def _init_pref(self, population, num_oss):
         """
         assign a 2D numpy array,
         min=1, max=10, distribution can change
         """
         val = np.random.normal(
             loc=5, scale=2, size=(population, num_oss)
-            ).clip(min=self.oss_floor, max=init_oss_max*10)
+            ).clip(min=self.oss_floor, max=10)
         self.pref = np.where(
             np.invert(self.state), self.oss_value+val, 0.01)
 
@@ -116,6 +119,13 @@ class BaseProcess:
         self._evol_adopt()
         self._evol_contribute()
         self._update_history()
+
+    def new(self):
+        self.oss_value = None
+        self.oss_eval = None
+        self.state = None
+        self.pref = None
+        self.history = {}
 
     def sim(self):
         iter_idx = 0

@@ -11,7 +11,7 @@ sim = BaseProcess(population=20,
 
 tmp = CompeteProcess(population=20,
                      num_oss=3,
-                     max_evol=100,
+                     max_evol=500,
                      oss_discount= 1,
                      init_adopt_rate=0.2)
 

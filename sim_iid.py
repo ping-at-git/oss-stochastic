@@ -7,11 +7,11 @@ POPULATION = 1e3
 
 sim = IIDProcess(population=POPULATION, 
                  num_oss=100,
-                 init_adopt_rate=0.005,
-                 prob_contribute=0.008,
-                 init_oss_max=10,
-                 oss_discount=0.99,
-                 max_evol=500
+                 init_adopt_rate=0.01,
+                 prob_contribute=0.01,
+                 init_oss_max=1,
+                 oss_discount=1,
+                 max_evol=1000
                  )
 
 

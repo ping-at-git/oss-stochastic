@@ -16,6 +16,24 @@ class CompeteProcess(BaseProcess):
     oss_exppref = None
     gamma = None
 
+    def __init__(self, 
+                 population=1000000, 
+                 num_oss=10, 
+                 init_adopt_rate=0.0001, 
+                 prob_contribute=0.001, 
+                 init_oss_max=1, 
+                 oss_discount=1, 
+                 max_evol=1000) -> None:
+
+        self.new()
+        super().__init__(population, 
+                         num_oss, 
+                         init_adopt_rate, 
+                         prob_contribute, 
+                         init_oss_max, 
+                         oss_discount,
+                         max_evol)
+
     def _init_state(self, population, num_oss, init_adopt_rate):
         cand = np.random.binomial(
             1, init_adopt_rate, population)
@@ -28,7 +46,7 @@ class CompeteProcess(BaseProcess):
                 state[idx, oss_idx[idx]] = True
         self.state = state
 
-    def _init_pref(self, population, num_oss, init_oss_max):
+    def _init_pref(self, population, num_oss):
         cand = np.random.normal(
             loc=5, scale=2, size=(population, 1)
             ).clip(min=self.oss_floor, max=10)
@@ -82,10 +100,10 @@ class CompeteProcess(BaseProcess):
     
     def _update_new_adoption(self, new_adoption):
         # below prevents readoption
-        new = np.logical_and(
-            new_adoption, np.invert(self.oss_abdprcs))
+        # new = np.logical_and(
+        #     new_adoption, np.invert(self.oss_abdprcs))
         # below allows readoption
-        # new = new_adoption
+        new = new_adoption
         self.state = np.add(self.state, new)
 
     def _new_adoption(self):
@@ -105,7 +123,7 @@ class CompeteProcess(BaseProcess):
         if self.oss_abdprcs is None:
             self.oss_abdprcs = new_abandon
         else:
-            self.oss_abdprcs = np.logical_and(
+            self.oss_abdprcs = np.logical_or(
                 self.oss_abdprcs, new_abandon
             )
         return new_abandon
@@ -123,7 +141,14 @@ class CompeteProcess(BaseProcess):
         self._abandon_adoption()
         self._switch_adoption()
         self._new_adoption()
-        # breakpoint()
+
+    def _sample_contribution(self, contributor):
+        """
+        here incorporate negative contribution
+        """
+        contribution = np.random.exponential(
+            scale=0.1, size=self.state.shape) - 0.09
+        return np.multiply(contribution, contributor).sum(axis=0)
 
     def _update_history(self):
         adopt_count = self.history.get('adopt_count',[])
